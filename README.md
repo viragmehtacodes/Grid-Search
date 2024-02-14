@@ -1,4 +1,4 @@
-# grid_search
+ Grid Search
 
 This Flutter application is a grid search tool. Users can:
 
@@ -8,6 +8,11 @@ Search for a specific text string within the grid.
 See the found text highlighted in the grid.
 Reset the grid and search parameters.
 It's a simple but functional tool for practicing or demonstrating basic grid search concepts.
+
+Gallery
+![Screenshot_1707892741](https://github.com/viragmehtacodes/Grid-Search/assets/157467706/af400c0c-c02d-4291-a3e2-f449af422391)
+![Screenshot_1707892745](https://github.com/viragmehtacodes/Grid-Search/assets/157467706/8af3f85a-49d1-4e08-a64a-13dc184a7ee2)
+![Screenshot_1707892725](https://github.com/viragmehtacodes/Grid-Search/assets/157467706/7c340923-176d-440e-9a2c-94cfde489127)
 
 ## Getting Started
 
