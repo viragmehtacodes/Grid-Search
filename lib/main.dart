@@ -141,17 +141,22 @@ class _GridSearchScreenState extends State<GridSearchScreen> {
                 const Text('Grid:'),
                 _buildGrid(),
                 const SizedBox(height: 16),
-                TextField(
+                TextFormField(
                   onChanged: (value) {
                     setState(() {
                       searchText = value;
                     });
                   },
+                  validator: (value) {
+                    final regex =
+                        RegExp(r'^[a-zA-Z]+$'); // Allows one or more letters
+                    if (value == null || !regex.hasMatch(value)) {
+                      return 'Only letters (a-z, A-Z) are allowed.';
+                    }
+                    return null;
+                  },
                   decoration: const InputDecoration(
-                    labelText: 'Search Text',
-                    labelStyle: TextStyle(
-                      color: Colors.black,
-                    ),
+                    labelText: 'Search Word',
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -220,6 +225,23 @@ class _GridSearchScreenState extends State<GridSearchScreen> {
     );
   }
 
+  bool _searchInDirection(
+      int startRow, int startCol, int rowIncrement, int colIncrement) {
+    for (int row = startRow, col = startCol, idx = 0;
+        idx < searchText.length;
+        idx++, row += rowIncrement, col += colIncrement) {
+      // Check bounds
+      if (row < 0 || row >= m || col < 0 || col >= n) return false;
+      // Check character match
+      if (grid[row][col].toUpperCase() != searchText[idx].toUpperCase())
+        return false;
+    }
+    // If complete word is matched
+    _highlightText(
+        startRow, startCol, rowIncrement, colIncrement, searchText.length);
+    return true;
+  }
+
   void _createGrid() {
     // Check if both m and n are greater than 0
     if (m > 0 && n > 0) {
@@ -236,71 +258,30 @@ class _GridSearchScreenState extends State<GridSearchScreen> {
   }
 
   void _searchText() {
-    // Check if the grid is created
-    if (grid.isEmpty) {
-      return;
-    }
-
-    // Search for the text in the grid
-    for (int row = 0; row < m; row++) {
-      for (int col = 0; col < n; col++) {
-        // Search in east direction
-        if (_searchInDirection(row, col, 0, 1)) {
-          return;
-        }
-        // Search in south direction
-        if (_searchInDirection(row, col, 1, 0)) {
-          return;
-        }
-        // Search in south-east direction
-        if (_searchInDirection(row, col, 1, 1)) {
-          return;
-        }
+    bool found = false;
+    for (int row = 0; row < m && !found; row++) {
+      for (int col = 0; col < n && !found; col++) {
+        // Right (0, 1), Down (1, 0), Diagonal down-right (1, 1)
+        found = _searchInDirection(row, col, 0, 1) ||
+            _searchInDirection(row, col, 1, 0) ||
+            _searchInDirection(row, col, 1, 1);
       }
     }
-
-    // If the text is not found
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Text not found in the grid'),
-    ));
+    if (!found) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Word not found in the grid'),
+      ));
+    }
   }
 
-  bool _searchInDirection(
-      int startRow, int startCol, int rowIncrement, int colIncrement) {
-    int row = startRow;
-    int col = startCol;
-
-    for (int i = 0; i < searchText.length; i++) {
-      if (row < 0 ||
-          row >= m ||
-          col < 0 ||
-          col >= n ||
-          grid[row][col] != searchText[i]) {
-        // Break if out of bounds or the characters don't match
-        break;
-      }
-
-      if (i == searchText.length - 1) {
-        // If the last character is reached, highlight the text
-        _highlightText(startRow, startCol, row, col);
-        return true;
-      }
-
-      // Move to the next position in the specified direction
-      row += rowIncrement;
-      col += colIncrement;
-    }
-
-    return false;
-  }
-
-  void _highlightText(int startRow, int startCol, int endRow, int endCol) {
-    for (int row = startRow; row <= endRow; row++) {
-      for (int col = startCol; col <= endCol; col++) {
-        setState(() {
-          grid[row][col] = '*${grid[row][col]}*';
-        });
-      }
+  void _highlightText(int startRow, int startCol, int rowIncrement,
+      int colIncrement, int length) {
+    for (int i = 0; i < length; i++) {
+      int row = startRow + i * rowIncrement;
+      int col = startCol + i * colIncrement;
+      setState(() {
+        grid[row][col] = '*${grid[row][col]}*'; // Example way to highlight
+      });
     }
   }
 
